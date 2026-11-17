@@ -1,0 +1,95 @@
+---
+title: "cv"
+description: "Data Science & Artificial Intelligence, Maastricht University · Last updated November 2026"
+---
+
+::: {.cv}
+
+## Education
+
+2024 – 2027
+:   **BSc Data Science & Artificial Intelligence**, Maastricht University, the Netherlands
+
+    - Honors student, GPA 9.11 / 10 (A+), top 1.5% of cohort
+    - Honors Program research: graph-based algorithms and constrained optimization for medical imaging
+    - Key courses: Machine Learning, Probability & Statistics, Graph Theory, Linear Algebra, Game Theory, NLP, Data Structures & Algorithms
+    - Current courses: Operations Research, Theory of Computing, Intelligent Systems, Robotics and Embedded Systems, Parallel Programming, Introduction to Bioinformatics, Logic for AI
+
+## Research experience
+
+Sep 2025 – Present
+:   **Research Intern**, Pie Medical Imaging, the Netherlands
+
+    - Developing graph-based and constrained optimization methods to estimate patient-specific myocardial perfusion territories from 3D cardiac CT
+    - Combining shortest-path algorithms with optimal-transport-inspired assignment that respects vessel-capacity limits, coronary branching, and Laplace-based anatomical coordinates
+    - Designing validation strategies for settings without ground-truth labels, and evaluating the methods on patients from multiple datasets
+    - Training a machine learning model to predict territory maps, building on the optimization-based approach
+
+Aug 2025 – Sep 2026
+:   **Student Researcher**, Turing (remote)
+
+    - Designed and evaluated benchmark and training tasks that test AI coding agents on software-engineering, scientific-computing, and tool-use problems
+    - Analysed agent trajectories to find recurring failure modes in reasoning and tool use, and audited solutions and evaluation criteria for correctness
+    - Designed structured tasks and reusable skills aimed at improving agent reasoning, tool use, and reliability
+    - Contributed to evaluation pipelines for agent benchmarks, including Terminal-Bench and OfficeQA
+
+## Research projects
+
+Ongoing
+:   **RL without SFT and randomness crystallization in LLMs**
+
+    - Testing whether reinforcement learning without supervised fine-tuning causes the same collapse of random-sampling behaviour ("crystallization") that Samanta, Holtzman & West (2026) found after SFT
+    - Measuring prompt sensitivity, seed distributions, and probability concentration across OLMo 3 RL-Zero checkpoints, with OLMo 3 Instruct-SFT as the reference
+
+Ongoing
+:   **Reasoning training and cooperation in LLMs**
+
+    - Testing whether training a model to do math changes how it behaves in a cooperation game, inspired by Piedrahita et al. (COLM 2025)
+    - Trained Qwen2.5-1.5B-Instruct and 3B-Instruct with GRPO + LoRA on GSM8K, saving checkpoints throughout training
+    - Building an evaluation pipeline that measures math accuracy and public goods game behaviour at each checkpoint
+
+## Teaching & service
+
+Sep 2026 – Present
+:   **Teaching Assistant**, Maastricht University
+
+    - Lead small-group tutorials in Procedural Programming and Logic
+    - Guide students through programming and problem-solving exercises, and report recurring learning difficulties to course coordinators
+
+Sep 2025 – Aug 2026
+:   **Peer Mentor**, Maastricht University
+
+    - Mentored first-year Data Science & AI students through their transition to university, with guidance on study planning, university resources, and programme expectations
+
+## Competitions
+
+Oct – Nov 2026
+:   **ICPC Competitive Programming**, BAPC & NWERC 2026
+
+    - Represented Maastricht University's AlgoLab at the Benelux Algorithm Programming Contest (BAPC)
+    - Qualified for the ICPC Northwestern Europe Regional Contest (NWERC) in Karlsruhe
+
+## Other projects
+
+Project
+:   **LLM classification fine-tuning**
+
+    - Fine-tuned an LLM on Chatbot Arena preference data to classify human-aligned responses, using LoRA, embeddings, and feature engineering
+
+Project
+:   **Students' grades predictor**
+
+    - Implemented a Random Forest regression model from scratch in Java to predict students' grades from demographic data and academic records, and identified the features that most influence outcomes
+
+## Skills
+
+Programming
+:   Python, Java, SQL, C++, MATLAB
+
+ML & LLMs
+:   PyTorch, Hugging Face Transformers, TRL, PEFT, vLLM, SimpleITK
+
+Tools
+:   Git, LaTeX, Weights & Biases
+
+:::

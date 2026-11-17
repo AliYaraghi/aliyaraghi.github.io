@@ -1,0 +1,256 @@
+---
+title: "Do language models act on the payoff in a cooperation game?"
+subtitle: "A small experiment with a public goods game and nine model setups."
+author: "Ali Yaraghi"
+date: "2026-11-17"
+categories: [reinforcement-learning, game-theory, cooperation, evaluation]
+image: asking-vs-playing.png
+format:
+  html:
+    toc: true
+---
+
+::: {.callout-note title="Summary"}
+- I tested whether language models give more in a public goods game when
+  giving earns them more tokens.
+- In most of the nine setups I tested, giving barely changed. Several of these
+  models still answered correctly when I asked them directly which choice
+  earns more.
+- Two setups gave most of their tokens when giving paid: Claude Sonnet 5.5,
+  and GPT-6 Luna with its reasoning setting switched on.
+- These are early results from one game. They suggest that a contribution rate
+  alone does not tell us why a model gives. They do not show whether a model
+  "really" cooperates.
+:::
+
+## Background
+
+This project started from a different question. Piedrahita et al. (2025)
+found that reasoning models contribute less than other models in public goods
+games. I wanted to test this inside one model: train it to reason better, and
+measure its cooperation along the way.
+
+I trained Qwen2.5 1.5B and 3B on math problems with reinforcement learning
+(GRPO; Shao et al., 2024). On 500 test problems, I did not find a clear
+improvement in math accuracy. The 1.5B went from 75.8% to 78.4% (95% CI of the
+difference: −0.9 to +6.1 points), and the 3B stayed at 85.6%. The models
+mainly learned the answer format that the reward checked (@fig-training). An early bug in my
+scoring, which counted only answers in that format, had first made the
+training look like a large gain.
+
+![Math accuracy (solid lines) stays flat during training, while the share of
+answers written in the `#### <number>` format (dotted lines) rises to almost
+100%.](training.png){#fig-training}
+
+So these checkpoints could not support the comparison I had planned. Therefore, I investigated another question: when a model gives tokens in
+this game, does its giving depend on the payoff?
+
+## The game
+
+Four players each receive 10 tokens per round, for ten rounds. Each player
+decides how many tokens to put into a shared pot. The pot is multiplied and
+split equally among the four players.
+
+- **×2 game.** If you put in 10 tokens, the pot grows by 20 and you get 5
+  back. You lose 5 tokens, and the group gains. This is the usual dilemma.
+- **×6 game.** If you put in 10 tokens, the pot grows by 60 and you get 15
+  back. You gain 5 tokens, no matter what the others do.
+
+In the ×6 game, putting in everything gives you the most tokens. A model whose
+choices follow its own payoff should give much more there compared to the ×2 game.
+I found this test in economics literature. They use this kind of check with people to separate cooperation from
+confusion about the rules (Andreoni, 1995; Burton-Chellew et al., 2016).
+
+The model played as one player. The other three players were scripted players who
+always give 0 ("free-riders"), so the ×2 and ×6 games differ only in the
+multiplier. In other ×2 games I tested multiple setups containing different combinations of these co-players:
+
+- a player who never contributes ("free-riders")
+
+- a player who always gives 10 ("cooperators")
+
+- a player who copies the model's last move ("reciprocators")
+
+- the model itself ("self-play")
+
+I compared two things:
+
+1. **Playing:** how much more of its tokens the model gives in the ×6 game
+   than in the ×2 game.
+2. **Asking:** outside the game, with the same rules, I asked questions such
+   as "If the others put in 0, which leaves you with more tokens: putting in 0
+   or putting in 10?" I measured how much more often the model answers "10"
+   at ×6 than at ×2.
+
+Each condition had 60 games, 20 for each of three wordings of the rules. I
+tested Qwen2.5-Instruct from 1.5B to 32B, Llama 3.3 70B, Claude Sonnet 5.5
+with extended thinking off, and GPT-6 Luna with its reasoning setting off and
+on.
+
+## Results
+
+### Asking and playing give different pictures
+
+![For each setup, the difference between ×6 and ×2 when asked (horizontal)
+and when playing (vertical).](asking-vs-playing.png){#fig-asking
+fig-alt="Scatter plot. Qwen 7B, 14B and 32B, Llama 3.3 70B and GPT-6 Luna sit
+near zero on the vertical axis, with horizontal values from 0.34 to 0.83.
+Claude Sonnet 5.5 and GPT-6 Luna with reasoning sit at 1.0 horizontally and
+about 0.84 vertically. An arrow connects GPT-6 Luna without and with
+reasoning."}
+
+::: {.callout-note collapse="true" title="Numbers for each setup"}
+| Setup | Asking: picks 10 more often at ×6 | Playing: gives more at ×6 | Share given at ×6 |
+|---|---|---|---|
+| Qwen 1.5B | not scored | −0.00 | 0.32 |
+| Qwen 3B | +0.04 | +0.07 | 0.64 |
+| Qwen 7B | +0.34 | +0.04 | 0.83 |
+| Qwen 14B | +0.57 | +0.05 | 0.42 |
+| Qwen 32B | +0.81 | +0.02 | 0.12 |
+| Llama 3.3 70B | +0.74 | +0.10 | 0.20 |
+| GPT-6 Luna, reasoning off | +0.83 | +0.12 | 0.18 |
+| GPT-6 Luna, reasoning on | +1.00 | +0.83 | 0.89 |
+| Claude Sonnet 5.5 | +1.00 | +0.85 | 0.94 |
+
+: Differences are ×6 minus ×2, against free-riders. "Share given" is the average share of the 10 tokens over all rounds. The Qwen 1.5B gave too many unreadable answers to score. {#tbl-main}
+:::
+
+Qwen 32B, Llama 3.3 70B and Luna with reasoning off mostly answer the payoff
+questions correctly (@fig-asking). When they play, they give only 0.02 to 0.12
+more at ×6. They contributed only 12% to 20% of their tokens in a game where giving everything
+earns the most. For example, when Qwen 32B is asked about the exact situation
+of the ×6 game, it answers "put in 10" 73% of the time. In that situation
+during play, it gives 7% of its tokens. Some of its written answers do the
+arithmetic and then misread it: "my net earnings will be 15 tokens, which is
+less than the 10 tokens I started with."
+
+Qwen 7B gives a lot in both games (0.79 at ×2, 0.83 at ×6). So a high share at
+×6 alone does not show that a model reacts to the payoff of each strategy.
+
+Claude Sonnet 5.5 and Luna with reasoning on give most of their tokens at ×6.
+Their difference between ×6 and ×2 is at least +0.77 under each of the three
+wordings.
+
+I noticed the gap between asking and playing in the Qwen models after looking
+at their results. Before running Llama and Luna, I wrote the prediction in my
+own log, and the gap appeared in both. Similar gaps
+have been reported in other decision tasks (Schmied et al., 2025).
+
+### Round by round, there are two patterns
+
+![Share of tokens given in each round against free-riders, in the ×2 game
+(blue) and the ×6 game (orange).](rounds.png){#fig-rounds fig-alt="Six small
+line charts, one per model, over rounds 1 to 10. Qwen 7B gives about 0.8 in
+both games. Qwen 32B and Llama 3.3 70B start near 0.55 in both games and fall
+close to zero. GPT-6 Luna starts at 0.86 in the x6 game and 0.58 in the x2
+game, then falls to near zero in both. GPT-6 Luna with reasoning and Claude
+Sonnet 5.5 stay near 0.9 in the x6 game and fall to zero in the x2 game."}
+
+@fig-rounds shows contributions in each round. The first round is interesting because the
+model has not yet seen the others play.
+A difference between ×2 and ×6 in round 1 is a reaction to the multiplier
+alone. I made this comparison after the main runs.
+
+- **Qwen 32B and Llama 3.3 70B** give about the same in round 1 of both games
+  (differences of +0.04 and +0.01, with 95% confidence intervals that include
+  zero). They do not react to the multiplier even before any history.
+- **Luna with reasoning off** does react at first. In round 1 it gives 0.86 at
+  ×6 and 0.58 at ×2 (difference +0.28, 95% CI +0.18 to +0.37). After it sees
+  the others give nothing, its giving at ×6 falls to 0.02 in round 2 and stays
+  low.
+- **Luna with reasoning on** also drops in round 2 (0.67), but returns to
+  about 0.9. **Sonnet** stays between 0.88 and 1.00 in every round.
+
+So "does not use the payoff" describes Qwen 32B and Llama better than Luna
+without reasoning, which reads the payoff but stops giving after the others
+free-ride. I do not yet know why.
+
+### Switching reasoning on
+
+GPT-6 Luna lets the user switch its reasoning setting on and off, with the
+same prompts.
+
+![GPT-6 Luna with reasoning off (blue) and on (orange): share of tokens given
+in each game. Lines are 95% confidence intervals.](luna-reasoning.png){#fig-luna
+fig-alt="Dot plot of six games. With reasoning on, Luna gives less in
+self-play, next to cooperators and in the mixed group, about the same next to
+reciprocators and free-riders, and much more in the x6 game (0.89 versus
+0.18)."}
+
+With reasoning on, its difference between ×6 and ×2 rises from +0.12 to +0.83
+(change +0.71, 95% CI +0.67 to +0.74). In the ×2 games (@fig-luna), where
+giving costs the player, it gives less with reasoning on: for example, 0.21
+less next to players who always give 10. I did not plan this comparison before the runs. I noticed it in a small trial run. It also depends on the wording: the drop next to cooperators is between 0.06 and 0.43, and in self-play, under one of the three wordings, Luna gives slightly more with reasoning on. So I trust only the general direction of this change, not its magnitude.
+
+Piedrahita et al. (2025) and Li and Shirado (2025) found that reasoning
+lowers cooperation in economic games. In Luna, reasoning also lowers giving
+where giving is costly, but raises it where giving is beneficial. One possible reading
+is that reasoning makes Luna's choices follow its own payoff more closely.
+This comes from one model, and switching the setting changes more than one
+thing (for example, the length limit of the answer), so it is a hypothesis,
+not a conclusion.
+
+## What I take from this
+
+- A contribution rate alone does not separate payoff-aware cooperation from
+  other patterns, such as following the co-players or giving a fixed amount. A
+  version of the game where giving is beneficial (the ×6 game) can be helpful as an extra check.
+- Passing this check shows that contributing follows the payoff. It does not show
+  the motive behind it. Failing it does not show that a model cannot
+  cooperate.
+- My pass rules needed work. My first rule (difference above zero with 95%
+  confidence) was passed by Qwen 7B, 14B and 32B with differences of only
+  +0.02 to +0.05. My stricter rule (a difference of at least +0.30, and at
+  least 0.80 given at ×6) cannot be passed by a model that already gives a lot
+  at ×2, such as Qwen 7B. Reporting the two numbers separately is clearer.
+- Results depend on the wording. Llama's difference is +0.28 in one wording
+  and about zero in the other two.
+
+## Current limitations
+
+- The game prompt does not tell the model what goal to pursue. At ×6 against
+  free-riders, giving 10 leaves the model with 15 tokens and each free-rider
+  with 25. A model that does not want to subsidize free-riders could
+  understand the payoff and still give 0. The asking questions, in contrast,
+  ask explicitly what earns more.
+- Not finding a clear gain in math accuracy does not show that the models'
+  reasoning did not change during training.
+- Only one model was tested with reasoning on and off.
+- Sampling settings and answer length limits differ between some models.
+- One simple game, three wordings, and scripted co-players.
+
+## Next steps
+
+Next, I plan to:
+
+- add a version of the prompt that states the goal ("earn as many tokens as
+  you can"), to test the free-rider explanation above;
+- compare play after the same histories, with and without a short reminder of
+  the payoff;
+- repeat the reasoning on/off comparison on another model.
+
+I plan to write these results up as a longer report. I am cleaning up the code
+and will link the public repository here.
+
+## References
+
+- Andreoni, J. (1995). Cooperation in public-goods experiments: kindness or
+  confusion? *American Economic Review*, 85(4), 891–904.
+- Burton-Chellew, M. N., El Mouden, C., & West, S. A. (2016). Conditional
+  cooperation and confusion in public-goods experiments. *PNAS*, 113(5),
+  1291–1296.
+- Li, Y., & Shirado, H. (2025). Spontaneous giving and calculated greed in
+  language models. *EMNLP 2025*.
+  [arXiv:2502.17720](https://arxiv.org/abs/2502.17720)
+- Piedrahita, D. G., et al. (2025). Corrupted by reasoning: Reasoning language
+  models become free-riders in public goods games. *COLM 2025*.
+  [arXiv:2506.23276](https://arxiv.org/abs/2506.23276)
+- Schmied, T., Bornschein, J., Grau-Moya, J., Wulfmeier, M., & Pascanu, R.
+  (2025). LLMs are greedy agents: Effects of RL fine-tuning on decision-making
+  abilities. [arXiv:2504.16078](https://arxiv.org/abs/2504.16078)
+- Shao, Z., et al. (2024). DeepSeekMath: Pushing the limits of mathematical
+  reasoning in open language models.
+  [arXiv:2402.03300](https://arxiv.org/abs/2402.03300)
+- Wang, G., et al. (2024). Confusion cannot explain cooperative behavior in
+  public goods games. *PNAS*, 121, e2310109121.
+  [doi:10.1073/pnas.2310109121](https://doi.org/10.1073/pnas.2310109121)

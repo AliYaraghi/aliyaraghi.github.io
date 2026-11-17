@@ -1,0 +1,11 @@
+---
+title: "publications"
+description: "Papers and preprints, newest first."
+listing:
+  id: publications
+  contents: publications.yml
+  template: _templates/publications.ejs.md
+---
+
+::: {#publications}
+:::

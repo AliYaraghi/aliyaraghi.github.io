@@ -1,0 +1,14 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600&display=swap">
+<meta name="quarto:offset" content="/">
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const a of document.querySelectorAll("a[data-email]")) {
+    const reveal = () => { a.href = "mailto:" + atob(a.dataset.email); };
+    for (const type of ["pointerenter", "focus", "click"]) {
+      a.addEventListener(type, reveal, { once: true });
+    }
+  }
+});
+</script>

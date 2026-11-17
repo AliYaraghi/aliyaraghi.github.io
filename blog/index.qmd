@@ -1,0 +1,18 @@
+---
+title: "blog"
+description: "Experiments, notes, and longer thoughts."
+listing:
+  id: posts
+  contents: posts
+  template: ../_templates/post-list.ejs.md
+  sort: "date desc"
+  date-format: "D MMM YYYY"
+  categories: false
+  feed: true
+  template-params:
+    tag-base: ""
+    thumbnails: true
+---
+
+::: {#posts}
+:::

@@ -1,0 +1,100 @@
+---
+title: "Reinforcement Learning and Random Numbers: an ongoing experiment"
+description: "A progress update on my experiments with OLMo 3."
+author: "Ali Yaraghi"
+date: "2026-09-02"
+image: prompt-sensitivity.png
+categories: [reinforcement-learning, LLMs, post-training, evaluation]
+format:
+  html:
+    toc: true
+---
+
+Reinforcement Learning is a topic I am really interested in. For the sake of learning, I have been doing some experiments involving RL. In one of them I investigated how a language model's answers to requests for random
+numbers change during RL. I am still working on
+this project. There are a few problems with the experiments that I need to solve, and **I don't think the results are ready for a research paper yet.**
+
+## The question
+
+In a recent paper, [Samanta et al. (2026)](https://arxiv.org/abs/2606.29933) found that after supervised
+fine-tuning (SFT), different prompts give more similar distributions of answers.
+The authors describe this as crystallisation, using the phrase "snap-to-grid." My question for this project was: "whether something similar
+happens when a model goes through RL without an SFT step first."
+
+## What I did
+
+AllenAI's OLMo 3 release ([Team Olmo, 2025](https://arxiv.org/abs/2512.13961)) made it possible for me
+to test this. Its RL-Zero Math model was trained on math problems using RL
+directly from the base model. I compared the base model with versions saved
+at seven points during that training run.
+
+I used 15 tasks, such as "give me a random digit." For each task, I checked
+50 different beginnings for the model's answer and aimed for 500
+usable replies for each one. I also checked SFT models, including OLMo 2.
+In a smaller experiment, I changed the wording of the question instead and
+let the model reason before answering.
+
+## What I found
+
+In the main experiment, the distribution for answers became more different across
+prompts as training continued. In the final checkpoint, the average difference
+was around 3.7 times the base-model's. In this setup, the answer distributions
+moved further apart rather than snapping together. In the digit task, different
+answer starts led to different favourite digits. But I was measuring
+the usable numbers that followed the answer beginnings I used. I still
+don't know if the same pattern holds when the model finishes reasoning
+and gives its final answer.
+
+![The blue line shows how much the answer mixes differ between prompts, averaged over 15 tasks. A value of 1 means the same as the base model. Only usable numerical replies are included. Hollow points mean fewer than half of replies were usable. The blue shading shows a 95% confidence interval from resampling prompts.](prompt-sensitivity.png){#fig-training fig-alt="Prompt sensitivity rises from 1.0 at the base model to about 3.7 at the final RL checkpoint. The last three points are hollow because fewer than half of replies gave a usable number. Reference lines for SFT and later chat models are near 1.2."}
+
+![Answers to "give me a random digit." Each thin line shows the distribution of digits after one answer start; the black line is the average. The lines spread out more in the final RL model. The two right panels show the SFT model for comparison. Only usable numerical replies are included, not necessarily the model's final answers. (explained in the limitations below)](digit-answers.png){#fig-digits fig-alt="Four panels show answer frequencies for digits 0 to 9. The base model's lines mostly peak at 7. The final RL-Zero Math model's lines vary more, with peaks at several different digits. Both SFT panels mostly peak at 7."}
+
+The Olmo 3 SFT reference lines in @fig-training are around 1.2, so they do not
+show a drop on my measure either. The paper measures something different: the
+largest distance from a selected reference distribution. In a separate OLMo 2
+check, that measure did drop after SFT, but the result was sensitive to a few
+unusual prompts. I need a larger replication before drawing conclusions from
+this.
+
+In the smaller experiment, differences between question wordings exceeded
+sampling noise on one of seven tasks for the base model, and on all seven from
+step 500 onward. This points in the same direction, although most late answers
+were forced after the token limit.
+
+## Limitations
+
+There are a few reasons to be careful with this result. Here are some of the limitations:
+
+- I followed one RL Math training run. I still have not checked if an
+  independent run or another model family would behave the same way.
+- At the final checkpoint only 21% of answers in the main experiment
+  gave a usable number. The model often kept generating tokens after that number, so
+  it was not necessarily the answer it would give in the end.
+- Letting the model reason first did not completely solve this problem. Around
+  93% of the final checkpoint's usable answers in the second experiment
+  are given after I stopped the model at 2,048 tokens and asked for an answer.
+- All the tasks involve picking numbers. I can't make conclusions about
+  creativity or diversity more broadly from these tests, and I don't yet
+  know why the measured difference grows.
+
+Earlier work by [Karouzos et al. (2026)](https://arxiv.org/abs/2604.16027) has already looked at output
+diversity in RL-Zero models. In this project I am testing how the differences
+between prompts change during the training.
+
+## What's next
+
+I am continuing the project. The next experiments I am working towards are:
+
+- giving the model more time to finish its replies;
+- checking how changing the way I ask for an answer affects the result;
+- repeating the test on an independent RL training run.
+
+For now, I have a pattern in these experiments that needs more checking.
+I need to test how much of it comes from the way I
+ask the model to answer.
+
+References:
+
+- Samanta, K., Holtzman, A., & West, P. (2026). [Towards Physical Intuitions for Alignment Dynamics: A Case Study With Randomness Crystallization](https://arxiv.org/abs/2606.29933).
+- Team Olmo (2025). [Olmo 3](https://arxiv.org/abs/2512.13961).
+- Karouzos, C., Tan, X., & Aletras, N. (2026). [Where does output diversity collapse in post-training?](https://arxiv.org/abs/2604.16027).
