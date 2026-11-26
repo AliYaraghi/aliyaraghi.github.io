@@ -1,5 +1,5 @@
 ---
-title: "Reinforcement Learning and Random Numbers: an ongoing experiment"
+title: "Does RL Without SFT Crystallize Randomness in LLMs?"
 description: "A progress update on my experiments with OLMo 3."
 author: "Ali Yaraghi"
 date: "2026-09-02"
