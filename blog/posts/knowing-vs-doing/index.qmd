@@ -3,6 +3,7 @@ title: "Do language models act on the payoff in a cooperation game?"
 subtitle: "A small experiment with a public goods game and nine model setups."
 author: "Ali Yaraghi"
 date: "2026-11-17"
+date-modified: "2026-11-23"
 categories: [reinforcement-learning, game-theory, cooperation, evaluation]
 image: asking-vs-playing.png
 format:
@@ -21,6 +22,13 @@ format:
 - These are early results from one game. They suggest that a contribution rate
   alone does not tell us why a model gives. They do not show whether a model
   "really" cooperates.
+:::
+
+::: {.callout-tip title="Update, 23 November 2026"}
+I ran the first of the next steps: the same games with the goal stated in the
+prompt ("maximize your own gain"). Stating the goal did not close the gap
+between asking and playing, and two models gave even less in the game where
+giving pays. See [Stating the goal](#sec-goal).
 :::
 
 ## Background
@@ -190,6 +198,71 @@ This comes from one model, and switching the setting changes more than one
 thing (for example, the length limit of the answer), so it is a hypothesis,
 not a conclusion.
 
+### Stating the goal {#sec-goal}
+
+*Added 23 November 2026.*
+
+The game prompt did not say what the player should aim for (see the first
+limitation below). So I added one sentence to the rules, the same under all
+three wordings:
+
+> Your goal is to maximize your own gain: end the game with as many tokens as
+> you can.
+
+I then ran the ×2 and ×6 games against free-riders again, with and without
+this sentence, for all nine setups (60 games each). If the gap came from the
+missing goal, the models that answer the payoff questions correctly should now
+give most of their tokens at ×6. I wrote down how I would read the results
+before running the games.
+
+![Share of tokens given against free-riders without (blue) and with (orange)
+the stated goal. Lines are 95% confidence intervals.](stated-goal.png){#fig-goal
+fig-alt="Two dot plots, one for the x2 game and one for the x6 game, with one
+row per setup. In the x2 game most setups give slightly less with the goal.
+In the x6 game Qwen 14B drops from 0.41 to 0.24 and Qwen 32B from 0.12 to 0.08,
+Llama 3.3 70B stays near 0.2, GPT-6 Luna rises from 0.18 to 0.26, and GPT-6
+Luna with reasoning and Claude Sonnet 5.5 stay above 0.9."}
+
+::: {.callout-note collapse="true" title="Numbers for each setup"}
+| Setup | ×2, no goal | ×2, goal | ×6, no goal | ×6, goal |
+|---|---|---|---|---|
+| Qwen 1.5B | 0.33 | 0.31 | 0.32 | 0.32 |
+| Qwen 3B | 0.51 | 0.61 | 0.64 | 0.74 |
+| Qwen 7B | 0.76 | 0.74 | 0.84 | 0.80 |
+| Qwen 14B | 0.36 | 0.22 | 0.41 | 0.24 |
+| Qwen 32B | 0.10 | 0.06 | 0.12 | 0.08 |
+| Llama 3.3 70B | 0.10 | 0.06 | 0.20 | 0.16 |
+| GPT-6 Luna, reasoning off | 0.06 | 0.01 | 0.18 | 0.26 |
+| GPT-6 Luna, reasoning on | 0.06 | 0.00 | 0.89 | 0.96 |
+| Claude Sonnet 5.5 | 0.10 | 0.07 | 0.94 | 0.92 |
+
+: Average share of the 10 tokens given over all rounds, against free-riders. For the Qwen models, the games without the goal were played again in the same run, so their numbers differ slightly from @tbl-main. For the other models, they are the games from the first run. {#tbl-goal}
+:::
+
+Stating the goal did not close the gap (@fig-goal):
+
+- No setup went from failing to passing my stricter rule (described under
+  "What I take from this"). The two setups that pass with the goal, Sonnet and
+  Luna with reasoning on, already passed without it.
+- The models did read the goal. In the ×2 game, where keeping pays, six of the
+  nine setups gave clearly less with it (95% confidence intervals below zero).
+- In the ×6 game, where giving pays, Qwen 14B and 32B gave even less with the
+  goal (0.41 to 0.24, and 0.12 to 0.08), by about as much as in the ×2 game.
+  They seem to read "maximize your own gain" as "keep more". Llama 3.3 70B did
+  not change.
+- Luna with reasoning off moved in the right direction, but not far: from 0.18
+  to 0.26 at ×6, and less at ×2. The rise was clear under one wording, smaller
+  under a second, and absent under the third. About a quarter of its answers
+  that give 0 after round 1 mention the 1.5 return or the 15 tokens, for
+  example: "Each token contributed returns only 1.5 tokens to you directly
+  \[...\] keeping your tokens is the safest choice for maximizing your own
+  total."
+
+So the missing goal does not explain the gap between asking and playing in
+these models. This test used one goal sentence and only free-rider
+co-players. For the API models, the games without the goal come from the first
+run, so the two halves of their comparison are a week apart.
+
 ## What I take from this
 
 - A contribution rate alone does not separate payoff-aware cooperation from
@@ -212,7 +285,8 @@ not a conclusion.
   free-riders, giving 10 leaves the model with 15 tokens and each free-rider
   with 25. A model that does not want to subsidize free-riders could
   understand the payoff and still give 0. The asking questions, in contrast,
-  ask explicitly what earns more.
+  ask explicitly what earns more. (Update: I tested this; see
+  [Stating the goal](#sec-goal).)
 - Not finding a clear gain in math accuracy does not show that the models'
   reasoning did not change during training.
 - Only one model was tested with reasoning on and off.
@@ -224,7 +298,8 @@ not a conclusion.
 Next, I plan to:
 
 - add a version of the prompt that states the goal ("earn as many tokens as
-  you can"), to test the free-rider explanation above;
+  you can"), to test the free-rider explanation above (done on 23 November;
+  see [Stating the goal](#sec-goal));
 - compare play after the same histories, with and without a short reminder of
   the payoff;
 - repeat the reasoning on/off comparison on another model.
